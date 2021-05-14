@@ -1,0 +1,6 @@
+[submodule "dive-backend"]
+	path = dive-backend
+	url = git@github.com:data-friendly-space/DIVE-backend.git
+[submodule "dive-frontend"]
+    path = dive-frontend
+    url = git@github.com:data-friendly-space/DIVE-frontend.git

@@ -2,12 +2,12 @@ version: '3.4'
 
 
 x-server-base: &x-server-base
-    image: docker.pkg.github.com/data-friendly-space/dive-docker/dive-backend:v1.0.0
+    image: dive/server:lastest
     build:
         context: ./dive-backend/
         dockerfile: Dockerfile
     volumes:
-        - ./prod-files/backend-uploads/:/usr/src/app/uploads/
+        - ./dive-backend/:/usr/src/app/
     depends_on:
         - rabbit
         - db
@@ -37,21 +37,28 @@ services:
 
     dive-api:
         <<: *x-server-base
+        command: bash -c 'python run_server.py'
+        # command: bash -c "
+        #     gunicorn
+        #         --config dive/server/gunicorn-config.py
+        #         --pythonpath server dive.server.core:app
+        #         --log-level INFO
+        #         --reload"
         ports:
             - 8081:8081
 
     dive-frontend:
-        image: docker.pkg.github.com/data-friendly-space/dive-docker/dive-frontend:v1.0.0
-        build:
-            context: dive-frontend
-            dockerfile: Dockerfile
-            args:
-                - API_URL=https://dive-api.thedeep.io/api
-                - DEBUG=false
-                - NODE_ENV=PRODUCTION
-        command: sh -c 'cp -r /app/dist/* /frontend-dist/'
+        image: node:7
+        environment:
+            - API_URL=http://localhost:8081/api
+            - DEBUG=true
+            - NODE_ENV=DEVELOPMENT
+        working_dir: /app/
+        command: bash -c 'npm install && npm start'
         volumes:
-            - ./prod-files/frontend-dist/:/frontend-dist/
+            - ./dive-frontend/:/app/
+        ports:
+            - 3009:3009
 
 volumes:
     postgres_data:
